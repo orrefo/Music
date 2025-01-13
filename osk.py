@@ -229,7 +229,11 @@ elif section == "popularity score":
         (chart["chart_year"] <= selected_years[1])]
     data_year=merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score',ascending=False).head(30),track_info)
     st.write(data_year)
-    st.write(data_year[['track_id','track_title']])
-
-
- 
+    data_year=data_year.rename(columns={
+        'name':'track_title',
+        'chart_week_y':'weeks_on_leaderboard',
+        'score_y':'weeks_on_1st_place',
+        'score_x':'score',
+        'name_y':'artist',
+        'chart_year_y':'first_year_on_leaderboard' })
+    st.write(data_year[['track_title','score','name_x','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
