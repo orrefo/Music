@@ -102,7 +102,7 @@ if section == "🎤 Artist Insights":
             text="num_chart_appearances",  # Display chart appearances count on bars
         )
         fig.update_traces(texttemplate='%{text}', textposition='outside')
-        fig.update_layout(title_x=0.5, template="plotly_white")
+        fig.update_layout(title_x=0.5, template="plotly_white", height=600, width=1000,)
         st.plotly_chart(fig, use_container_width=True)
 
         # 4. Track Type Distribution
@@ -122,20 +122,27 @@ if section == "🎤 Artist Insights":
         st.plotly_chart(fig)
 
     # 5. Discover Top Artists
+    
     st.subheader("Discover the Top Artists")
     st.write("Explore the top artists based on popularity and customize filters to refine the view.")
 
-    # Filters
-    popularity_threshold = st.slider(
-        "Minimum Popularity", 0, 100, 50,
-        help="Adjust to filter artists by their popularity score."
+    # Range slider for popularity
+    popularity_range = st.slider(
+        "Select Popularity Range",
+        min_value=int(data["popularity"].min()),
+        max_value=int(data["popularity"].max()),
+        value=(50, 100),  # Default range
+        step=1,
+        help="Select the range of popularity scores to filter artists."
     )
+
     explicit_filter = st.checkbox(
         "Include Explicit Artists",
         value=True,
         help="Toggle to include or exclude explicit artists."
     )
 
+    # Group data by artist
     grouped_artists = data.groupby("artist", as_index=False).agg({
         "popularity": "mean",  # Average popularity score
         "followers": "sum",    # Total followers for each artist
@@ -144,7 +151,10 @@ if section == "🎤 Artist Insights":
     })
 
     # Apply filters
-    filtered_artists = grouped_artists[grouped_artists['popularity'] >= popularity_threshold]
+    filtered_artists = grouped_artists[
+        (grouped_artists['popularity'] >= popularity_range[0]) &
+        (grouped_artists['popularity'] <= popularity_range[1])
+    ]
     if not explicit_filter:
         filtered_artists = filtered_artists[~filtered_artists['explicit']]
 
@@ -169,6 +179,7 @@ if section == "🎤 Artist Insights":
     # Filtered Artists Data Table
     st.subheader("Filtered Artists Data")
     st.dataframe(filtered_artists[["artist", "popularity", "followers", "explicit", "score"]], use_container_width=True)
+
 
 
 
