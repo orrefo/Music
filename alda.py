@@ -10,7 +10,7 @@ def load_data():
 
 data = load_data()
 
-# Preprocess data: Group by artist to calculate the total points 
+# Preprocess data: Group by artist to calculate the total points with the TrueReach system 
 artist_scores = data.groupby("artist", as_index=False)["score"].sum()
 
 
@@ -29,7 +29,7 @@ data["chart_week"] = pd.to_datetime(data["chart_week"], errors="coerce")
 if section == "🎤 Artist Insights":
     st.title("🎤 Artist Insights")
     
-    # 1. Artist Filter
+    # Artist Filter
     st.subheader("Filter by Artist")
     artist_choice = st.selectbox("Select an Artist", data["artist"].unique())
     artist_data = data[data["artist"] == artist_choice]
@@ -38,8 +38,8 @@ if section == "🎤 Artist Insights":
     if artist_data.empty:
         st.write("No data available for the selected artist.")
     else:
-        # 2. Artist Score Growth Over Time
-        st.subheader("📈 Artist Score Growth Over Time")
+        # 1. Artist Score Growth Over Time
+        st.subheader("📈 Artist TrueReach® Growth Over Time")
 
         # Group by year dynamically
         artist_data_yearly = (
@@ -54,6 +54,11 @@ if section == "🎤 Artist Insights":
 
         # Allow user to select a range of years
         min_year, max_year = artist_data_yearly["Year"].min(), artist_data_yearly["Year"].max()
+        # Check if the artist has only one year of activity or no activity
+    if min_year == max_year:
+        st.write(f"The artist {artist_choice} has not been active across multiple years or has insufficient data for a range of years.")
+    else:
+        # Range slider for year selection
         selected_years = st.slider(
             "Select Year Range",
             min_value=min_year,
@@ -74,18 +79,19 @@ if section == "🎤 Artist Insights":
             filtered_data,
             x="Year",
             y="score",
-            title=f"Score Growth for {artist_choice} ({selected_years[0]} - {selected_years[1]})",
+            title=f"TrueReach® Growth for {artist_choice} ({selected_years[0]} - {selected_years[1]})",
             labels={"Year": "Year", "score": "Score"},
             template="plotly_white"
         )
-        fig.update_layout(title_x=0.5)
+        fig.update_layout(title_x=0.5, xaxis=dict( type="category")) # Treat years as discrete categories to avoid decimals
+       
         st.plotly_chart(fig, use_container_width=True)
 
-        # 3. Most Successful Tracks by Chart Appearances
+        # 2. Most Successful Tracks by Chart Appearances
         st.subheader("Most Successful Tracks by Chart Appearances")
         track_success_count = (
             artist_data.groupby(["track_title", "artist"], as_index=False)
-            .agg({"list_position": "count", "release_date": "min"})  # Count chart appearances and get earliest release date
+            .agg({"list_position": "count", "release_date": "min"})  # Count chart appearances and get release date
             .rename(columns={"list_position": "num_chart_appearances"})  # Rename column for clarity
             .sort_values("num_chart_appearances", ascending=False)  # Sort by the number of appearances
         )
@@ -105,8 +111,8 @@ if section == "🎤 Artist Insights":
         fig.update_layout(title_x=0.5, template="plotly_white", height=600, width=1000,)
         st.plotly_chart(fig, use_container_width=True)
 
-        # 4. Track Type Distribution
-        st.subheader(f"Track Type Distribution for {artist_choice}")
+        # 3. Release Distribution
+        st.subheader(f"Release Distribution for {artist_choice}")
         unique_tracks = artist_data.groupby("track_id", as_index=False).first()  # Ensure unique tracks by grouping on track_id
         track_types = unique_tracks["album_type"].value_counts().reset_index()
         track_types.columns = ["album_type", "count"]
@@ -115,16 +121,16 @@ if section == "🎤 Artist Insights":
             track_types,
             values="count",
             names="album_type",
-            title=f"Album Type Distribution for {artist_choice}",
+            title=f"Release Distribution for {artist_choice}",
             labels={"album_type": "Album Type", "count": "Count"},
             template="plotly_white"
         )
         st.plotly_chart(fig)
 
-    # 5. Discover Top Artists
-    
-    st.subheader("Discover the Top Artists")
-    st.write("Explore the top artists based on popularity and customize filters to refine the view.")
+    #Discover Top Artists
+        
+    st.subheader("Discover the Top Artists Now")
+    st.write("Explore the top artists based on current popularity and customize filters to refine the view.")
 
     # Range slider for popularity
     popularity_range = st.slider(
@@ -134,52 +140,51 @@ if section == "🎤 Artist Insights":
         value=(50, 100),  # Default range
         step=1,
         help="Select the range of popularity scores to filter artists."
-    )
+        )
 
     explicit_filter = st.checkbox(
         "Include Explicit Artists",
         value=True,
         help="Toggle to include or exclude explicit artists."
-    )
+        )
 
     # Group data by artist
     grouped_artists = data.groupby("artist", as_index=False).agg({
-        "popularity": "mean",  # Average popularity score
-        "followers": "sum",    # Total followers for each artist
-        "explicit": "any",     # Check if any track is explicit
-        "score": "sum"         # Total score for the artist
-    })
+            "popularity": "mean",  # Average popularity score
+            "followers": "sum",    # Total followers for each artist
+            "explicit": "any",     # Check if any track is explicit
+            "score": "sum"         # Total score for the artist (TrueReach)
+        })
 
     # Apply filters
     filtered_artists = grouped_artists[
-        (grouped_artists['popularity'] >= popularity_range[0]) &
-        (grouped_artists['popularity'] <= popularity_range[1])
-    ]
+            (grouped_artists['popularity'] >= popularity_range[0]) &
+            (grouped_artists['popularity'] <= popularity_range[1])
+        ]
     if not explicit_filter:
-        filtered_artists = filtered_artists[~filtered_artists['explicit']]
+            filtered_artists = filtered_artists[~filtered_artists['explicit']]
 
     # Sort by popularity
     filtered_artists = filtered_artists.sort_values("popularity", ascending=False)
 
     # Top Artists Chart
     fig = px.bar(
-        filtered_artists.head(10),
-        x="artist",
-        y="popularity",
-        title="Top 10 Artists by Popularity",
-        color="explicit",
-        labels={"artist": "Artist", "popularity": "Popularity"},
-        color_discrete_map={True: "#FF6347", False: "#4682B4"},
-        template="plotly_white",
-        hover_data={"popularity": True, "followers": True, "explicit": True}
-    )
+            filtered_artists.head(10),
+            x="artist",
+            y="popularity",
+            title="Top 10 Artists by Popularity",
+            color="explicit",
+            labels={"artist": "Artist", "popularity": "Popularity"},
+            color_discrete_map={True: "#FF6347", False: "#4682B4"},
+            template="plotly_white",
+            hover_data={"popularity": True, "followers": True, "explicit": True}
+        )
     fig.update_layout(title_x=0.5)
     st.plotly_chart(fig, use_container_width=True)
 
     # Filtered Artists Data Table
     st.subheader("Filtered Artists Data")
     st.dataframe(filtered_artists[["artist", "popularity", "followers", "explicit", "score"]], use_container_width=True)
-
 
 
 
@@ -201,7 +206,7 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
     artist_2_score = artist_scores[artist_scores["artist"] == artist_2]["score"].values[0]
 
     # Display overall scores as a bar chart
-    st.subheader("🌟 Overall Points Comparison")
+    st.subheader("🌟 TrueReach® Comparison")
     overall_score_data = pd.DataFrame({
         "Artist": [artist_1, artist_2],
         "Score": [artist_1_score, artist_2_score]
@@ -210,7 +215,7 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
         overall_score_data,
         x="Artist",
         y="Score",
-        title="🌟 Overall Score Comparison",
+        title="🌟 TrueReach® Comparison",
         labels={"Artist": "Artist", "Score": "Overall Score"},
         color="Artist",
         color_discrete_sequence=["#85c1e9", "#f0b27a"],
@@ -231,16 +236,21 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
     # Loop through each metric to create individual charts
     for metric_name, metric_column in metrics.items():
         st.subheader(f"{metric_name}")
-        
-        # Calculate averages for each artist
+
+        # Transform values for specific metrics
+        if metric_column in ["danceability", "energy", "valence"]:
+            artist_1_score = artist_1_data[metric_column].mean() * 100
+            artist_2_score = artist_2_data[metric_column].mean() * 100
+        else:
+            artist_1_score = artist_1_data[metric_column].mean()
+            artist_2_score = artist_2_data[metric_column].mean()
+
+        # Create a DataFrame for the metric comparison
         duel_data = pd.DataFrame({
             "Artist": [artist_1, artist_2],
-            "Score": [
-                artist_1_data[metric_column].mean(),
-                artist_2_data[metric_column].mean()
-            ]
+            "Score": [artist_1_score, artist_2_score]
         })
-        
+
         # Create bar chart for the metric
         fig = px.bar(
             duel_data,
@@ -255,16 +265,22 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
         fig.update_layout(title_x=0.5)
         st.plotly_chart(fig, use_container_width=True)
 
-    # Display Summary Table
-    st.subheader("📊 Summary of Comparison Metrics")
 
-    # Create the summary DataFrame
+    # Prepare summary table
+    st.subheader("📊 Summary of Comparison Metrics")
     summary_data = pd.DataFrame({
-        "Metric": ["🌟 Overall Score"] + list(metrics.keys()),
-        artist_1: [artist_1_score] + [artist_1_data[col].mean() for col in metrics.values()],
-        artist_2: [artist_2_score] + [artist_2_data[col].mean() for col in metrics.values()],
+        "Metric": ["🌟 TrueReach®"] + list(metrics.keys()),
+        artist_1: [artist_1_score] + [
+            artist_1_data[metrics[key]].mean() * 100 if metrics[key] in ["danceability", "energy", "valence"] else artist_1_data[metrics[key]].mean()
+            for key in metrics
+        ],
+        artist_2: [artist_2_score] + [
+            artist_2_data[metrics[key]].mean() * 100 if metrics[key] in ["danceability", "energy", "valence"] else artist_2_data[metrics[key]].mean()
+            for key in metrics
+        ]
     })
 
-
-    # Displaying
+    # Display summary table
     st.dataframe(summary_data, use_container_width=True)
+
+
