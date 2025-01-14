@@ -29,7 +29,7 @@ section = st.sidebar.radio(
     "Select a Section",
     [
         "🎤 Artist Insights",
-        "popularity score"
+        "👩‍🎤TrueReach®"
     ]
 )
 data["chart_week"] = pd.to_datetime(data["chart_week"], errors="coerce")
@@ -183,10 +183,10 @@ if section == "🎤 Artist Insights":
 
 
 # Section 2: Artist Duel
-elif section == "popularity score":
-    st.title("what is the biggest song through time")
+elif section == "👩‍🎤TrueReach®":
+    st.title("👩‍🎤TrueReach®")
     st.write(
-        "Compare two artists head-to-head on various metrics like popularity, followers, and energy."
+        "See the songs and artists that we have loved through the years"
     )
     chart=pd.read_csv('chart.csv')
     mapping=pd.read_csv('mapping.csv',index_col=0)
@@ -205,13 +205,14 @@ elif section == "popularity score":
 
     
     tab_1, tab_2=st.tabs(['Tracks','Artists'])
-    with tab_1:    
+    with tab_1: 
+
         year_filter_yes = st.checkbox(
             "Single Year",
             value=False,
-            help="Toggle to switch between single years or a range."
-        )
-        num=st.number_input('Amount of songs to display',min_value=1,max_value=150,value=10)
+            help="Toggle to switch between single years or a range.")
+        num=st.number_input('Number of songs to display',min_value=1,max_value=150,value=10)
+
         if year_filter_yes==False:
             min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
             selected_years = st.slider(
@@ -221,6 +222,7 @@ elif section == "popularity score":
                 value=(min_year, max_year),
                 step=1,
                 help="Drag the slider to filter tracks by year range.")
+            
             filtered_data_2 = chart[
                 (chart["chart_year"] >= selected_years[0]) &
                 (chart["chart_year"] <= selected_years[1])]
@@ -229,12 +231,14 @@ elif section == "popularity score":
                 'name':'track_title',
                 'chart_week_y':'weeks_on_leaderboard',
                 'score_y':'weeks_on_1st_place',
-                'score_x':'score',
+                'score_x':'TrueReach®',
                 'name_x':'artist',
                 'chart_year_y':'first_year_on_leaderboard' })
-            st.bar_chart(data_year,x='track_title',y='score')
-            st.write(data_year[['track_title','score','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
             
+            fig= px.bar(data_year,x='track_title',y='TrueReach®',text_auto='.2s')
+            st.plotly_chart(fig)
+            st.write(data_year[['track_title','TrueReach®','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
+
         else:
             min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
             selected_years = st.slider(
@@ -250,18 +254,21 @@ elif section == "popularity score":
                 'name':'track_title',
                 'chart_week_y':'weeks_on_leaderboard',
                 'score_y':'weeks_on_1st_place',
-                'score_x':'score',
+                'score_x':'TrueReach®',
                 'name_x':'artist',
                 'chart_year_y':'first_year_on_leaderboard' })
-            st.bar_chart(data_year,x='track_title',y='score')
-            st.write(data_year[['track_title','score','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
+            
+            fig= px.bar(data_year,x='track_title',y='TrueReach®',text_auto='.2s')
+            st.plotly_chart(fig)
+            st.write(data_year[['track_title','TrueReach®','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
     with tab_2:
+
         year_filter_yes_art = st.checkbox(
         "Single Year",
         value=False,
         help="Toggle to switch between single years or a range for artists.")
-
         num_art=st.number_input('Amount of artists to display',min_value=1,max_value=150,value=10)
+
         if year_filter_yes_art==False:
             min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
             selected_years_art = st.slider(
@@ -271,6 +278,7 @@ elif section == "popularity score":
                 value=(min_year, max_year),
                 step=1,
                 help="Drag the slider to filter artists by year range.")
+            
             filtered_data_3 = data[
                 (data["chart_year"] >= selected_years_art[0]) &
                 (data["chart_year"] <= selected_years_art[1])]
@@ -279,8 +287,19 @@ elif section == "popularity score":
             data_year=merge_artist(data_year,filtered_data_3.groupby('artist_id')['chart_week'].count())
             data_year=merge_artist(data_year,filtered_data_3.groupby('artist_id')['chart_year'].min())
             data_year=merge_artist(data_year,filtered_data_3[filtered_data_3['list_position']==1][['artist_id','score']].groupby('artist_id').count())
-                    
-            st.write(data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index())
+            data_year=data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index()        
+            data_year=data_year.rename(columns={
+                'name':'artist',
+                'track_title':'songs_on_leaderboard',
+                'chart_week':'weeks_on_leaderboard',
+                'score_y':'weeks_on_1st_place',
+                'score_x':'TrueReach®',
+                'chart_year':'first_year_on_leaderboard',
+                'popularity':'current_popularity' })
+            
+            fig= px.bar(data_year,x='artist',y='TrueReach®')
+            st.plotly_chart(fig)
+            st.write(data_year[['artist','TrueReach®','songs_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place','first_year_on_leaderboard','current_popularity']])
             
         else:
             min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
@@ -289,14 +308,25 @@ elif section == "popularity score":
                 min_value=min_year,
                 max_value=max_year,
                 step=1,
-                help="Drag the slider to filter artists by year."
-            )
+                help="Drag the slider to filter artists by year.")
+            
             filtered_data_4 = data[data["chart_year"] == selected_years_art]
             data_year=merge_artist(filtered_data_4.groupby('artist_id')['score'].sum(),artist)
             data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['track_title'].nunique())
             data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['chart_week'].count())
             data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['chart_year'].min())
             data_year=merge_artist(data_year,filtered_data_4[filtered_data_4['list_position']==1][['artist_id','score']].groupby('artist_id').count())
-             
-            st.write(data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index())
+            data_year=data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index()
+            data_year=data_year.rename(columns={
+                'name':'artist',
+                'track_title':'songs_on_leaderboard',
+                'chart_week':'weeks_on_leaderboard',
+                'score_y':'weeks_on_1st_place',
+                'score_x':'TrueReach®',
+                'chart_year':'first_year_on_leaderboard',
+                'popularity':'current_popularity' })
+            
+            fig= px.bar(data_year,x='artist',y='TrueReach®',text_auto='.2s')
+            st.plotly_chart(fig)
+            st.write(data_year[['artist','TrueReach®','songs_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place','first_year_on_leaderboard','current_popularity']])
             
