@@ -363,14 +363,14 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
     artist_2_data = data[data["artist"] == artist_2]
     
     # Get overall scores for each artist
-    artist_1_score = artist_scores[artist_scores["artist"] == artist_1]["score"].values[0]
-    artist_2_score = artist_scores[artist_scores["artist"] == artist_2]["score"].values[0]
+    artist_1_score_true = artist_1_data["score"].sum()
+    artist_2_score_true = artist_2_data["score"].sum()
 
     # Display overall scores as a bar chart
     st.subheader("🌟 TrueReach® Comparison")
     overall_score_data = pd.DataFrame({
         "Artist": [artist_1, artist_2],
-        "Score": [artist_1_score, artist_2_score]
+        "Score": [artist_1_score_true, artist_2_score_true]
     })
     fig = px.bar(
         overall_score_data,
@@ -431,11 +431,11 @@ elif section == "⚔️ Artist Duel: Who’s the Star?":
     st.subheader("📊 Summary of Comparison Metrics")
     summary_data = pd.DataFrame({
         "Metric": ["🌟 TrueReach®"] + list(metrics.keys()),
-        artist_1: [artist_1_score] + [
+        artist_1: [artist_1_score_true] + [
             round(artist_1_data[metrics[key]].mean() * 100, 1) if metrics[key] in ["danceability", "energy", "valence"] else round(artist_1_data[metrics[key]].mean(), 1)
             for key in metrics
         ],
-        artist_2: [artist_2_score] + [
+        artist_2: [artist_2_score_true] + [
             round(artist_2_data[metrics[key]].mean() * 100, 1) if metrics[key] in ["danceability", "energy", "valence"] else round(artist_2_data[metrics[key]].mean(), 1)
             for key in metrics
         ]
