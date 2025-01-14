@@ -13,6 +13,10 @@ def merge_track(table_1,table_2):
     data=pd.merge(table_1,table_2,left_on='track_id',right_on='track_id',how='left')
     return data
 
+def merge_artist(table_1,table_2):
+    data=pd.merge(table_1,table_2,left_on='artist_id',right_on='artist_id',how='left')
+    return data
+
 data = load_data()
 
 # Preprocess data: Group by artist to calculate the total points 
@@ -191,49 +195,108 @@ elif section == "popularity score":
     tracks=tracks.drop_duplicates()
     chart['score']=round((-15.79*np.log(chart['list_position']+1)+88.06)*1.3,0).astype('int')
     chart['chart_year']=pd.to_datetime(chart['chart_week']).dt.year
-    chart_track_score_year=chart.groupby(['track_id','chart_year'])['score'].sum().sort_values(ascending=False)
-    chart_track_score=chart.groupby(['track_id'])['score'].sum().sort_values(ascending=False)
-    chart_track_score_year=chart_track_score_year.reset_index()
     map_artist=pd.merge(mapping,artist,left_on='artist_id',right_on='artist_id',how='left')
     artist_track=merge_track(map_artist,tracks)
-    tracks_score=merge_track(tracks,chart_track_score)
-    artists_for_score=artist_track.groupby(['track_id'])['name_x'].unique()
-    track_info=merge_track(tracks,artists_for_score)
+    track_info=merge_track(tracks,artist_track.groupby(['track_id'])['name_x'].unique())
     track_info=merge_track(track_info,chart.groupby('track_id')['chart_week'].count())
     track_info=merge_track(track_info,chart.groupby('track_id')['chart_year'].min())
     track_info=merge_track(track_info,chart[chart['list_position']==1][['track_id','score']].groupby('track_id').count())
-    tracks_score_year=merge_track(chart_track_score_year,tracks)
-    tracks_score_year=merge_track(tracks_score_year,artists_for_score)
-    tracks_score_year=merge_track(tracks_score_year,chart.groupby('track_id')['chart_week'].count())
-    tracks_score_year=merge_track(tracks_score_year,chart[chart['list_position']==1][['track_id','score']].groupby('track_id').count())
-  
-        # Allow user to select a range of years
-    min_year, max_year = tracks_score_year["chart_year"].min(), tracks_score_year["chart_year"].max()
-    selected_years = st.slider(
-        "Select Year Range",
-        min_value=min_year,
-        max_value=max_year,
-        value=(min_year, max_year),
-        step=1,
-        help="Drag the slider to filter data by year range."
-    )
+    data["chart_year"]=data['chart_week'].dt.year
 
-    # Filter the data based on the selected year range
-    filtered_data = tracks_score_year[
-        (tracks_score_year["chart_year"] >= selected_years[0]) &
-        (tracks_score_year["chart_year"] <= selected_years[1])]
     
-    st.write(tracks_score_year[tracks_score_year['chart_year']==selected_years[0]].sort_values(by='score_x',ascending=False).head(30))
-    filtered_data_2 = chart[
-        (chart["chart_year"] >= selected_years[0]) &
-        (chart["chart_year"] <= selected_years[1])]
-    data_year=merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score',ascending=False).head(30),track_info)
-    st.write(data_year)
-    data_year=data_year.rename(columns={
-        'name':'track_title',
-        'chart_week_y':'weeks_on_leaderboard',
-        'score_y':'weeks_on_1st_place',
-        'score_x':'score',
-        'name_y':'artist',
-        'chart_year_y':'first_year_on_leaderboard' })
-    st.write(data_year[['track_title','score','name_x','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
+    tab_1, tab_2=st.tabs(['Tracks','Artists'])
+    with tab_1:    
+        year_filter_yes = st.checkbox(
+            "Single Year",
+            value=False,
+            help="Toggle to switch between single years or a range."
+        )
+        num=st.number_input('Amount of songs to display',min_value=1,max_value=150,value=10)
+        if year_filter_yes==False:
+            min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
+            selected_years = st.slider(
+                "Select Year Range",
+                min_value=min_year,
+                max_value=max_year,
+                value=(min_year, max_year),
+                step=1,
+                help="Drag the slider to filter tracks by year range.")
+            filtered_data_2 = chart[
+                (chart["chart_year"] >= selected_years[0]) &
+                (chart["chart_year"] <= selected_years[1])]
+            data_year=merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score',ascending=False).head(num),track_info)
+            data_year=data_year.rename(columns={
+                'name':'track_title',
+                'chart_week_y':'weeks_on_leaderboard',
+                'score_y':'weeks_on_1st_place',
+                'score_x':'score',
+                'name_x':'artist',
+                'chart_year_y':'first_year_on_leaderboard' })
+            st.bar_chart(data_year,x='track_title',y='score')
+            st.write(data_year[['track_title','score','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
+            
+        else:
+            min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
+            selected_years = st.slider(
+                "Select Year ",
+                min_value=min_year,
+                max_value=max_year,
+                step=1,
+                help="Drag the slider to filter tracks by year."
+            )
+            filtered_data_2 = chart[chart["chart_year"] == selected_years]
+            data_year=merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score',ascending=False).head(num),track_info)
+            data_year=data_year.rename(columns={
+                'name':'track_title',
+                'chart_week_y':'weeks_on_leaderboard',
+                'score_y':'weeks_on_1st_place',
+                'score_x':'score',
+                'name_x':'artist',
+                'chart_year_y':'first_year_on_leaderboard' })
+            st.bar_chart(data_year,x='track_title',y='score')
+            st.write(data_year[['track_title','score','artist','first_year_on_leaderboard','weeks_on_leaderboard','weeks_on_1st_place']])
+    with tab_2:
+        year_filter_yes_art = st.checkbox(
+        "Single Year",
+        value=False,
+        help="Toggle to switch between single years or a range for artists.")
+
+        num_art=st.number_input('Amount of artists to display',min_value=1,max_value=150,value=10)
+        if year_filter_yes_art==False:
+            min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
+            selected_years_art = st.slider(
+                "Select Year Range",
+                min_value=min_year,
+                max_value=max_year,
+                value=(min_year, max_year),
+                step=1,
+                help="Drag the slider to filter artists by year range.")
+            filtered_data_3 = data[
+                (data["chart_year"] >= selected_years_art[0]) &
+                (data["chart_year"] <= selected_years_art[1])]
+            data_year=merge_artist(filtered_data_3.groupby('artist_id')['score'].sum(),artist)
+            data_year=merge_artist(data_year,filtered_data_3.groupby('artist_id')['track_title'].nunique())
+            data_year=merge_artist(data_year,filtered_data_3.groupby('artist_id')['chart_week'].count())
+            data_year=merge_artist(data_year,filtered_data_3.groupby('artist_id')['chart_year'].min())
+            data_year=merge_artist(data_year,filtered_data_3[filtered_data_3['list_position']==1][['artist_id','score']].groupby('artist_id').count())
+                    
+            st.write(data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index())
+            
+        else:
+            min_year, max_year = chart["chart_year"].min(), chart["chart_year"].max()
+            selected_years_art = st.slider(
+                "Select Year ",
+                min_value=min_year,
+                max_value=max_year,
+                step=1,
+                help="Drag the slider to filter artists by year."
+            )
+            filtered_data_4 = data[data["chart_year"] == selected_years_art]
+            data_year=merge_artist(filtered_data_4.groupby('artist_id')['score'].sum(),artist)
+            data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['track_title'].nunique())
+            data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['chart_week'].count())
+            data_year=merge_artist(data_year,filtered_data_4.groupby('artist_id')['chart_year'].min())
+            data_year=merge_artist(data_year,filtered_data_4[filtered_data_4['list_position']==1][['artist_id','score']].groupby('artist_id').count())
+             
+            st.write(data_year.sort_values(by='score_x',ascending=False).head(num_art).reset_index())
+            
