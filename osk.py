@@ -182,7 +182,7 @@ if section == "🎤 Artist Insights":
 
 
 
-# Section 2: Artist Duel
+# Section 2: TrueReach
 elif section == "👩‍🎤TrueReach®":
     st.title("👩‍🎤TrueReach®")
     st.write(
