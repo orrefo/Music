@@ -23,9 +23,10 @@ section = st.sidebar.radio(
         "⚔️ Artist Duel: Who’s the Star?"
     ]
 )
-data["chart_week"] = pd.to_datetime(data["chart_week"], errors="coerce")
 
 # Section 1: Artist Insights
+data["chart_week"] = pd.to_datetime(data["chart_week"], errors="coerce")
+
 if section == "🎤 Artist Insights":
     st.title("🎤 Artist Insights")
     
@@ -127,7 +128,7 @@ if section == "🎤 Artist Insights":
         )
         st.plotly_chart(fig)
 
-    #Discover Top Artists
+    # Discover Top Artists
         
     st.subheader("Discover the Top Artists Now")
     st.write("Explore the top artists based on current popularity and customize filters to refine the view.")
