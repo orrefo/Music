@@ -163,17 +163,17 @@ if section == "👩‍🎤TrueReach®":
 
 # Section 2: TrueReach
 if section == "👩‍🎤TrueReach®":
-    # Title and description for the TrueReach section
+    
     st.title("👩‍🎤TrueReach®")
     st.write(
         "See the songs and artists that we have loved through the years"
     )
     
     # Load necessary CSV files into Pandas DataFrames
-    chart = pd.read_csv('chart.csv')  # Chart data containing song rankings
-    mapping = pd.read_csv('mapping.csv', index_col=0)  # Mapping between artists and tracks
-    artist = pd.read_csv('artist.csv', index_col=0)  # Artist data
-    tracks = pd.read_csv('tracks.csv', index_col=0)  # Track metadata
+    chart = pd.read_csv('chart.csv')  
+    mapping = pd.read_csv('mapping.csv', index_col=0)  
+    artist = pd.read_csv('artist.csv', index_col=0)  
+    tracks = pd.read_csv('tracks.csv', index_col=0)  
     
     # Remove duplicate rows from the tracks data
     tracks = tracks.drop_duplicates()
@@ -202,7 +202,7 @@ if section == "👩‍🎤TrueReach®":
     # Create two tabs: one for Tracks and another for Artists
     tab_1, tab_2 = st.tabs(['Tracks', 'Artists'])
     
-    # Code for the Tracks tab
+
     with tab_1: 
         # Checkbox for year filtering
         year_filter_yes = st.checkbox(
@@ -231,8 +231,8 @@ if section == "👩‍🎤TrueReach®":
             ]
             
             # Aggregate and merge filtered data with track information
-            data_year = merge_track(filtered_data_2.groupby('track_id').sum()
-                                    .sort_values(by='score', ascending=False).head(num), track_info)
+            data_year = merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score', ascending=False).head(num), track_info)
+                                    
             
             # Rename columns for clarity
             data_year = data_year.rename(columns={
@@ -263,9 +263,8 @@ if section == "👩‍🎤TrueReach®":
             
             # Filter data by the selected year
             filtered_data_2 = chart[chart["chart_year"] == selected_years]
-            data_year = merge_track(filtered_data_2.groupby('track_id').sum()
-                                    .sort_values(by='score', ascending=False).head(num), track_info)
-            
+            data_year = merge_track(filtered_data_2.groupby('track_id').sum().sort_values(by='score', ascending=False).head(num), track_info)
+                
             # Rename columns for clarity
             data_year = data_year.rename(columns={
                 'name': 'track_title',
@@ -283,7 +282,6 @@ if section == "👩‍🎤TrueReach®":
             # Display detailed data
             st.write(data_year[['track_title', 'TrueReach®', 'artist', 'first_year_on_leaderboard', 'num_chart_appearence', 'weeks_on_1st_place']])
     
-    # Code for the Artists tab
     with tab_2:
         # Checkbox for artist year filtering
         year_filter_yes_art = st.checkbox(
@@ -350,4 +348,28 @@ if section == "👩‍🎤TrueReach®":
             # Filter data and calculate artist-level metrics
             filtered_data_4 = data[data["chart_year"] == selected_years_art]
             data_year = merge_artist(filtered_data_4.groupby('artist_id')['score'].sum(), artist)
-            data_year = merge_artist(data_year, filtered_data_4.groupby('artist_id
+            data_year = merge_artist(data_year, filtered_data_4.groupby('artist_id')['track_title'].nunique())
+            data_year = merge_artist(data_year, filtered_data_4.groupby('artist_id')['chart_week'].count())
+            data_year = merge_artist(data_year, filtered_data_4.groupby('artist_id')['chart_year'].min())
+            data_year = merge_artist(data_year, filtered_data_4[filtered_data_4['list_position'] == 1][['artist_id', 'score']].groupby('artist_id').count())
+            
+            # Sort data and select top artists
+            data_year = data_year.sort_values(by='score_x', ascending=False).head(num_art).reset_index()
+            
+            # Rename columns for clarity
+            data_year = data_year.rename(columns={
+                'name': 'artist',
+                'track_title': 'songs_on_leaderboard',
+                'chart_week': 'num_chart_appearence',
+                'score_y': 'weeks_on_1st_place',
+                'score_x': 'TrueReach®',
+                'chart_year': 'first_year_on_leaderboard',
+                'popularity': 'current_popularity'
+            })
+            
+            # Create a bar chart visualization
+            fig = px.bar(data_year, x='artist', y='TrueReach®')
+            st.plotly_chart(fig)
+            
+            # Display detailed data
+            st.write(data_year[['artist', 'TrueReach®', 'songs_on_leaderboard', 'num_chart_appearence', 'weeks_on_1st_place', 'current_popularity']])

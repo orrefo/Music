@@ -35,7 +35,7 @@ section = st.sidebar.radio(
 )
 data["chart_week"] = pd.to_datetime(data["chart_week"], errors="coerce")
 
-# Section 2: TrueReach
+# Section 1: TrueReach
 if section == "👩‍🎤TrueReach®":
     st.title("👩‍🎤TrueReach®")
     st.write(
@@ -183,11 +183,11 @@ if section == "👩‍🎤TrueReach®":
             st.plotly_chart(fig)
             st.write(data_year[['artist','TrueReach®','songs_on_leaderboard','num_chart_appearence','weeks_on_1st_place','current_popularity']])
             
-            # Section 1: Artist Insights
-
+# Section 2: Artist Insights
 
 elif section == "🎤 Artist Insights":
     st.title("🎤 Artist Insights")
+    
     tab_1, tab_2=st.tabs(['Artist Insight','Top Artists Now'])
     with tab_1: 
         # Artist Filter
@@ -349,7 +349,7 @@ elif section == "🎤 Artist Insights":
 
 
 
-# Section 2: Artist Duel
+# Section 4: Artist Duel
 elif section == "⚔️ Artist Duel: Who’s the Star?":
     st.title("⚔️ Artist Duel: Who’s the Star?")
     st.write(
