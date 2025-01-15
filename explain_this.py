@@ -161,8 +161,7 @@ if section == "👩‍🎤TrueReach®":
 
 
 
-
-            # Section 2: TrueReach
+# Section 2: TrueReach
 if section == "👩‍🎤TrueReach®":
     # Title and description for the TrueReach section
     st.title("👩‍🎤TrueReach®")
