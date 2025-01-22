@@ -130,11 +130,22 @@ def render_landing_section():
         - Compare various metrics between two artists
         """)
 
-    # Footer
+   # Footer
     st.markdown("---")
     st.markdown("""
-    <div style='text-align: center; color: #666;'>
-    Developed using Billboard Charts (2000-2024) and Spotify Audio Features Data
+    <div style='text-align: center; color: #666; font-size: 14px; margin-top: 20px;'>
+        <p><strong>Developed using Billboard Charts (2000-2024) and Spotify Audio Features Data</strong></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='text-align: center; color: #666; font-size: 14px;'>
+        <p style="margin: 0;">by</p>
+        <p style="margin: 0;">Alda Çadri</p>
+        <p style="margin: 0;">Felix Bergkrantz</p>
+        <p style="margin: 0;">Ikram Said</p>
+        <p style="margin: 0;">Oskar Wahlberg</p>
+        <p style="margin: 0;">Subin Moon</p>
     </div>
     """, unsafe_allow_html=True)
 

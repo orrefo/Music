@@ -39,8 +39,8 @@ def render_truereach_section(chart, mapping, artist, tracks):
     # Extract the year from the chart week in data
     data["chart_year"] = pd.to_datetime(data['chart_week']).dt.year
     
-    # Create two tabs: one for Tracks and another for Artists
-    tab_1, tab_2 = st.tabs(['Tracks', 'Artists'])
+    # Create three tabs: one for Tracks, one for Artists, and the third for TrueReach Concept
+    tab_1, tab_2, tab_3 = st.tabs(['Tracks', 'Artists', 'TrueReach®'])
     
 
     with tab_1: 
@@ -227,3 +227,11 @@ def render_truereach_section(chart, mapping, artist, tracks):
             
             # Display detailed data
             st.write(data_year[['artist', 'TrueReach®', 'songs_on_leaderboard', 'num_chart_appearence', 'weeks_on_1st_place', 'current_popularity']])
+
+    with tab_3:
+        st.subheader("Understanding TrueReach®")
+        st.write("""
+            TrueReach® is a metric designed to estimate reach of a song or an artist based on chart performance. 
+            This proprietary metric allows us to explore which tracks and artists have performed best through time.
+         """)
+        st.image("TrueReach®.png", caption="TrueReach® Visualization")
