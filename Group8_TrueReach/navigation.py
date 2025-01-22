@@ -9,7 +9,8 @@ def render_sidebar():
             "🛬Landing Page",
             "👩‍🎤TrueReach®",
             "🎤 Artist Insights",
-            "🔬Audio Features",
-            "⚔️ Artist Duel: Who’s the Star?"
+            "⚔️ Artist Duel: Who’s the Star?",
+            "🔬Audio Features"
+            
         ]
     )
