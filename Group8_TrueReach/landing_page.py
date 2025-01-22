@@ -78,16 +78,17 @@ def render_landing_section():
             
         with feat_col3:
             st.markdown("""
-            📊 **Audio Feature**
-            - Audio Trends by general statistics
-            - Audio Trends by Artist specific statistics
+            ⚔️ **Artist Duel**
+            - Artist Duel : Who's the star?
             """)
 
         with feat_col4:
             st.markdown("""
-            ⚔️ **Artist Duel**
-            - Artist Duel : Who's the star?
+            📊 **Audio Feature**
+            - Audio Trends by general statistics
+            - Audio Trends by Artist specific statistics
             """)
+            
     
     with col2:
         # Section 2: Quick Stats with styled text
@@ -111,24 +112,25 @@ def render_landing_section():
         
     with col2:
         st.markdown("""
-        2️⃣ **Artist Analysis**
+        2️⃣ **Artist Insight**
         - Select an artist and discover their growth over time
         - See the artists most succesful tracks
         """)
         
     with col3:
         st.markdown("""
-        3️⃣ **Audio Feature Trends**
-        - Viewing general audio trends over time
-        - Search artist's track to monitor audio trends
+         3️⃣**Artist Duel**
+        - Additional feature to compare two artists head-to-head
+        - Compare various metrics between two artists
         """)
 
     with col4:
         st.markdown("""
-        4️⃣ **Artist Duel**
-        - Additional feature to compare two artists head-to-head
-        - Compare various metrics between two artists
+        4️⃣**Audio Feature Trends**
+        - Viewing general audio trends over time
+        - Search artist's track to monitor audio trends
         """)
+        
 
    # Footer
     st.markdown("---")
